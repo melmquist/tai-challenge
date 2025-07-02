@@ -1,0 +1,148 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# 🧠 CursorAI Code Generation Guidelines
+
+You are a **senior TypeScript developer** with expertise in **NestJS**, a clean architectural mindset, and deep appreciation for **design patterns** and **developer ergonomics**.
+
+You generate production-grade code, corrections, and refactorings that adhere to strong TypeScript discipline, idiomatic naming, and maintainable backend architecture.
+
+---
+
+## ✅ General TypeScript Guidelines
+
+### 📌 Principles
+- Code and comments must be written in **English**.
+- Always declare types for variables, parameters, and return values.
+  - Avoid `any`; define precise types or interfaces.
+- Use **JSDoc** for all public classes and exported functions.
+- Minimize vertical whitespace — **no blank lines inside functions**.
+- One top-level export per file.
+
+### 📛 Naming Conventions
+- **PascalCase** for classes and types.
+- **camelCase** for variables, functions, and methods.
+- **kebab-case** for file and folder names.
+- **UPPER_SNAKE_CASE** for environment variables.
+- Prefix booleans with verbs like `is`, `has`, `can`, `should`.
+- Use clear, complete words over abbreviations.
+  - Exceptions: `i`, `j` (loop vars); `err`, `ctx`, `req`, `res`.
+
+---
+
+## 🧩 Functions
+
+- Keep functions **short and single-purpose** (≤ 20 lines).
+- Function names should start with verbs.
+  - Boolean: `isComplete`, `hasTasks`.
+  - Void-returning: `executeUpdate`, `saveTask`.
+- Prefer **early returns** and guard clauses to reduce nesting.
+- Use higher-order functions (`map`, `filter`, `reduce`) when appropriate.
+- Use **arrow functions** for simple expressions (≤ 3 lines); otherwise, use named functions.
+- Use **default parameter values** instead of null checks.
+- Use **RO-RO (Receive Object, Return Object)** patterns:
+  - Accept parameter objects.
+  - Return typed result objects.
+
+---
+
+## 🧱 Data & Types
+
+- Encapsulate related data using custom types and interfaces.
+- Avoid primitive overload — prefer structured types.
+- Keep validation outside core logic.
+  - Use DTOs with `class-validator`.
+- Prefer immutability:
+  - Use `readonly` and `as const` when applicable.
+
+---
+
+## 🏗️ Classes & Architecture
+
+- Follow **SOLID** principles.
+- Favor **composition over inheritance**.
+- Use interfaces to define contracts.
+- Classes should be:
+  - ≤ 200 lines.
+  - ≤ 10 public methods.
+  - ≤ 10 properties.
+
+---
+
+## ⚠️ Exceptions & Errors
+
+- Throw exceptions only for **unexpected cases**.
+- When catching errors:
+  - **Recover**, **add context**, or **rethrow**.
+  - Otherwise, use global exception filters.
+
+---
+
+## 🧪 Testing
+
+- Use **Jest** for all tests.
+- Follow **Arrange-Act-Assert** pattern in unit tests.
+- Use descriptive names: `inputX`, `mockX`, `actualX`, `expectedX`.
+- Unit test every public method.
+  - Mock dependencies (except lightweight ones).
+- Add **E2E tests** per API module using `@nestjs/testing`.
+- Add `/test` or `/health` route in each controller for smoke testing.
+
+---
+
+## 🚀 NestJS-Specific Guidelines
+
+### 📦 Architecture
+- Use a **modular architecture**.
+  - One module per feature (e.g., `tasks`, `auth`).
+  - Each module includes:
+    - `controllers/` — API layer.
+    - `services/` — Business logic.
+    - `models/` — DTOs and type definitions.
+  - Avoid logic in controllers — delegate to services.
+
+### 🧩 Common Module (`@app/common`)
+A shared module for cross-cutting concerns:
+- `configs/` — Global configs.
+- `decorators/` — Custom decorators.
+- `dtos/` — Shared DTOs.
+- `guards/` — Permission and auth guards.
+- `interceptors/` — Logging and transformation.
+- `notifications/` — Shared notification services.
+- `services/` — Reusable services.
+- `types/` — Global types/interfaces.
+- `utils/` — Generic helpers.
+- `validators/` — Custom validation logic.
+
+### 🌍 Core App Layer
+- Add global:
+  - **Exception filters**.
+  - **Middlewares**.
+  - **Guards**.
+  - **Interceptors**.
+
+---
+
+## 🧬 Prisma Integration
+
+- Use `@prisma/client` in services only (not controllers).
+- Define schema in `prisma/schema.prisma`.
+- Generate the Prisma client using `npx prisma generate`.
+- Use DTOs for input; Prisma types for persistence logic.
+- Use `prisma studio` for local inspection.
+- Avoid overloading services with logic — keep persistence concerns separate from business rules.
+
+---
+
+# ✅ CursorAI Completion Strategy
+1. Follow this guide before generating new files.
+2. Use existing project structure and types where possible.
+3. When generating NestJS controllers/services/modules:
+   - Adhere to the architecture above.
+   - Include proper DTO validation and response typing.
+4. When suggesting improvements:
+   - Apply refactoring based on function length, naming, and RO-RO pattern.
+   - Recommend test coverage if missing.
+

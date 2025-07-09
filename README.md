@@ -39,24 +39,29 @@ A full-stack task manager app built with Vue 3 (Composition API, Tailwind CSS) a
    cd backend && npm install
    cd ../frontend && npm install
    ```
-3. **Run database migrations:**
+3. **Create the backend .env file:**
+   - In the `backend` directory, create a file named `.env` with the following contents:
+     ```env
+     DATABASE_URL="file:./dev.db"
+     ```
+4. **Run database migrations:**
    ```sh
    cd ../backend
    npx prisma migrate dev --name init
    npx prisma generate
    ```
-4. **Start the backend:**
+5. **Start the backend:**
    ```sh
    npm run start
    # Runs on http://localhost:3000
    ```
-5. **Start the frontend:**
+6. **Start the frontend:**
    ```sh
    cd ../frontend
    npm run dev
    # Runs on http://localhost:5173
    ```
-6. **Open the app:**
+7. **Open the app:**
    - Visit [http://localhost:5173](http://localhost:5173) in your browser.
 
 ---

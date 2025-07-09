@@ -13,6 +13,7 @@ exports.CreateTaskDto = void 0;
 const class_validator_1 = require("class-validator");
 class CreateTaskDto {
     title;
+    tags;
 }
 exports.CreateTaskDto = CreateTaskDto;
 __decorate([
@@ -21,4 +22,11 @@ __decorate([
     (0, class_validator_1.MaxLength)(255),
     __metadata("design:type", String)
 ], CreateTaskDto.prototype, "title", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.ArrayUnique)(),
+    (0, class_validator_1.IsString)({ each: true }),
+    __metadata("design:type", Array)
+], CreateTaskDto.prototype, "tags", void 0);
 //# sourceMappingURL=create-task.dto.js.map

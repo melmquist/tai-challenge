@@ -1,4 +1,11 @@
-import { IsString, IsNotEmpty, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  MaxLength,
+  IsOptional,
+  IsArray,
+  ArrayUnique,
+} from 'class-validator';
 
 /**
  * DTO for creating a new Task
@@ -9,4 +16,10 @@ export class CreateTaskDto {
   @IsNotEmpty()
   @MaxLength(255)
   title!: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayUnique()
+  @IsString({ each: true })
+  tags?: string[];
 } 

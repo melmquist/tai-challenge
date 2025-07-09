@@ -1,4 +1,11 @@
-import { IsString, IsOptional, MaxLength, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  MaxLength,
+  IsBoolean,
+  IsArray,
+  ArrayUnique,
+} from 'class-validator';
 
 /**
  * DTO for updating a Task
@@ -13,4 +20,10 @@ export class UpdateTaskDto {
   @IsOptional()
   @IsBoolean()
   completed?: boolean;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayUnique()
+  @IsString({ each: true })
+  tags?: string[];
 } 

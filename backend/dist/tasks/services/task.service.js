@@ -10,18 +10,64 @@ exports.TaskService = void 0;
 const common_1 = require("@nestjs/common");
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
+function mapPrismaTaskToApi(task) {
+    return {
+        id: task.id,
+        title: task.title,
+        completed: task.completed,
+        createdAt: task.createdAt,
+        tags: task.tags?.map((tt) => tt.tag.name) || [],
+    };
+}
 let TaskService = class TaskService {
     async getAll() {
-        return await prisma.task.findMany({ orderBy: { createdAt: 'desc' } });
+        const tasks = await prisma.task.findMany({
+            orderBy: { createdAt: 'desc' },
+            include: { tags: { include: { tag: true } } },
+        });
+        return tasks.map(mapPrismaTaskToApi);
     }
     async create(createTaskDto) {
-        return await prisma.task.create({ data: { ...createTaskDto } });
+        const { title, tags = [] } = createTaskDto;
+        const connectOrCreateTags = tags.map((name) => ({
+            where: { name },
+            create: { name },
+        }));
+        const task = await prisma.task.create({
+            data: {
+                title,
+                tags: {
+                    create: tags.map((name) => ({ tag: { connectOrCreate: { where: { name }, create: { name } } } })),
+                },
+            },
+            include: { tags: { include: { tag: true } } },
+        });
+        return mapPrismaTaskToApi(task);
     }
     async update(id, updateTaskDto) {
-        const task = await prisma.task.findUnique({ where: { id } });
+        const task = await prisma.task.findUnique({
+            where: { id },
+            include: { tags: { include: { tag: true } } },
+        });
         if (!task)
             throw new common_1.NotFoundException('Task not found');
-        return await prisma.task.update({ where: { id }, data: updateTaskDto });
+        let tagsUpdate = {};
+        if (updateTaskDto.tags) {
+            const tagRecords = await Promise.all(updateTaskDto.tags.map((name) => prisma.tag.upsert({ where: { name }, update: {}, create: { name } })));
+            tagsUpdate = {
+                set: [],
+                connect: tagRecords.map((tag) => ({ id: tag.id })),
+            };
+        }
+        const updated = await prisma.task.update({
+            where: { id },
+            data: {
+                ...updateTaskDto,
+                tags: updateTaskDto.tags ? tagsUpdate : undefined,
+            },
+            include: { tags: { include: { tag: true } } },
+        });
+        return mapPrismaTaskToApi(updated);
     }
 };
 exports.TaskService = TaskService;

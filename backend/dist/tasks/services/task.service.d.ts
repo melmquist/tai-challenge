@@ -5,6 +5,7 @@ type Task = {
     title: string;
     completed: boolean;
     createdAt: Date;
+    tags: string[];
 };
 export declare class TaskService {
     getAll(): Promise<Task[]>;

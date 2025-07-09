@@ -4,13 +4,14 @@ import { CreateTaskDto } from '../models/create-task.dto';
 import { UpdateTaskDto } from '../models/update-task.dto';
 
 /**
- * Local Task type matching Prisma model
+ * Local Task type matching Prisma model, with tags as string[]
  */
 type Task = {
   id: number;
   title: string;
   completed: boolean;
   createdAt: Date;
+  tags: string[];
 };
 
 /**
@@ -19,19 +20,74 @@ type Task = {
  */
 const prisma = new PrismaClient();
 
+function mapPrismaTaskToApi(task: any): Task {
+  return {
+    id: task.id,
+    title: task.title,
+    completed: task.completed,
+    createdAt: task.createdAt,
+    tags: task.tags?.map((tt: any) => tt.tag.name) || [],
+  };
+}
+
 @Injectable()
 export class TaskService {
   async getAll(): Promise<Task[]> {
-    return await prisma.task.findMany({ orderBy: { createdAt: 'desc' } });
+    const tasks = await prisma.task.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: { tags: { include: { tag: true } } },
+    });
+    return tasks.map(mapPrismaTaskToApi);
   }
 
   async create(createTaskDto: CreateTaskDto): Promise<Task> {
-    return await prisma.task.create({ data: { ...createTaskDto } });
+    const { title, tags = [] } = createTaskDto;
+    // Upsert tags and create TaskTag relations
+    const connectOrCreateTags = tags.map((name) => ({
+      where: { name },
+      create: { name },
+    }));
+    const task = await prisma.task.create({
+      data: {
+        title,
+        tags: {
+          create: tags.map((name) => ({ tag: { connectOrCreate: { where: { name }, create: { name } } } })),
+        },
+      },
+      include: { tags: { include: { tag: true } } },
+    });
+    return mapPrismaTaskToApi(task);
   }
 
   async update(id: number, updateTaskDto: UpdateTaskDto): Promise<Task> {
-    const task = await prisma.task.findUnique({ where: { id } });
+    const task = await prisma.task.findUnique({
+      where: { id },
+      include: { tags: { include: { tag: true } } },
+    });
     if (!task) throw new NotFoundException('Task not found');
-    return await prisma.task.update({ where: { id }, data: updateTaskDto });
+
+    let tagsUpdate = {};
+    if (updateTaskDto.tags) {
+      // Upsert tags and sync TaskTag relations
+      const tagRecords = await Promise.all(
+        updateTaskDto.tags.map((name) =>
+          prisma.tag.upsert({ where: { name }, update: {}, create: { name } })
+        )
+      );
+      tagsUpdate = {
+        set: [], // remove all existing
+        connect: tagRecords.map((tag) => ({ id: tag.id })),
+      };
+    }
+
+    const updated = await prisma.task.update({
+      where: { id },
+      data: {
+        ...updateTaskDto,
+        tags: updateTaskDto.tags ? tagsUpdate : undefined,
+      },
+      include: { tags: { include: { tag: true } } },
+    });
+    return mapPrismaTaskToApi(updated);
   }
 }

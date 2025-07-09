@@ -1,7 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaClient, Task } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { CreateTaskDto } from '../models/create-task.dto';
 import { UpdateTaskDto } from '../models/update-task.dto';
+
+/**
+ * Local Task type matching Prisma model
+ */
+type Task = {
+  id: number;
+  title: string;
+  completed: boolean;
+  createdAt: Date;
+};
 
 /**
  * Service for managing tasks

@@ -10,7 +10,16 @@ import {
 import { TaskService } from '../services/task.service';
 import { CreateTaskDto } from '../models/create-task.dto';
 import { UpdateTaskDto } from '../models/update-task.dto';
-import type { Task } from '@prisma/client';
+
+/**
+ * Local Task type matching Prisma model
+ */
+type Task = {
+  id: number;
+  title: string;
+  completed: boolean;
+  createdAt: Date;
+};
 
 /**
  * Controller for Task endpoints
